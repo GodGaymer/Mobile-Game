@@ -1,3 +1,9 @@
+# Visual Deliverables
+
+A full first-pass visual package for ForgeBelt Guild is available in [`docs/visuals`](docs/visuals/README.md).
+
+---
+
 ## Extraction + heat (baseline)
 
 `extraction_per_sec = base + drill_bars * step + modifiers`
