@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ForgeBelt Guild — Colony Ops Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="phone-frame">
+    <header class="hud">
+      <div class="meter">📅 Day <strong id="dayVal">1</strong></div>
+      <div class="meter">💳 Credits <strong id="creditsVal">0</strong></div>
+      <div class="meter">🏘 Pop <strong id="popVal">42</strong></div>
+      <div class="meter">😊 Morale <strong id="moraleVal">70</strong></div>
+      <div class="meter">🛡 Hull <strong id="hullVal">100</strong></div>
+      <div class="meter">🚁 Drones <strong id="droneVal">3</strong></div>
+    </header>
+
+    <section class="news-strip" id="newsText">Sector News: Calm markets.</section>
+
+    <section class="screen active" data-screen="contracts">
+      <h1>Mission Dispatch</h1>
+      <p class="sub">Pick a mission, set drone stance, and let the rig run the operation.</p>
+
+      <div id="missionCards" class="cards"></div>
+
+      <div class="panel">
+        <label>Drone Stance</label>
+        <div class="row">
+          <button class="choice-btn" data-stance="safe">Safe</button>
+          <button class="choice-btn active" data-stance="balanced">Balanced</button>
+          <button class="choice-btn" data-stance="aggressive">Aggressive</button>
+        </div>
+        <button id="dispatchBtn" class="btn good">Dispatch Mission</button>
+      </div>
+
+      <div class="panel" id="activeMissionPanel">
+        <h3>Active Mission</h3>
+        <div id="activeMissionText">No mission active.</div>
+        <div class="progress-wrap"><div id="missionProgress" class="progress-bar"></div></div>
+        <button id="boostBtn" class="btn warn">Spend 40c: Emergency Boost</button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="crew">
+      <h1>Operations Log</h1>
+      <p class="sub">Recent mission and colony events.</p>
+      <div id="logList" class="log-list"></div>
+    </section>
+
+    <section class="screen" data-screen="rig">
+      <h1>Shipyard</h1>
+      <p class="sub">Upgrade your rig to increase mission outcomes.</p>
+      <pre class="ship-art" id="shipArt"></pre>
+      <div id="shipStats" class="panel"></div>
+      <div id="shipUpgradeList" class="cards"></div>
+    </section>
+
+    <section class="screen" data-screen="market">
+      <h1>Market Terminal</h1>
+      <p class="sub">Buy to sustain colony, sell to grow credits, speculate on sector news.</p>
+      <div id="marketRows" class="market-list"></div>
+    </section>
+
+    <section class="screen" data-screen="station">
+      <h1>Colony Management</h1>
+      <p class="sub">Keep the settlement alive to maintain output and morale.</p>
+      <div class="needs" id="needsGrid"></div>
+      <div id="colonyBuildList" class="cards"></div>
+    </section>
+
+    <footer class="tabs">
+      <button class="tab active" data-tab="contracts">Contracts</button>
+      <button class="tab" data-tab="crew">Crew</button>
+      <button class="tab" data-tab="rig">Rig</button>
+      <button class="tab" data-tab="market">Market</button>
+      <button class="tab" data-tab="station">Station</button>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+:root {
+  --bg: #11161d;
+  --panel: #243142;
+  --panel-2: #1a2330;
+  --text: #e9eef5;
+  --muted: #a9b4c2;
+  --warn: #f4a62a;
+  --danger: #e24a3b;
+  --good: #63d471;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: radial-gradient(circle at 20% 0%, #1f2936, var(--bg));
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+}
+.phone-frame {
+  width: min(430px, 100vw);
+  height: min(940px, 100vh);
+  background: #121922;
+  border: 1px solid #3c495d;
+  border-radius: 18px;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  overflow: hidden;
+}
+.hud {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 10px;
+  background: #1b2330;
+}
+.meter { background: var(--panel); border-radius: 8px; padding: 7px; font-size: 13px; }
+.news-strip {
+  background: #1a2433;
+  border-top: 1px solid #33445a;
+  border-bottom: 1px solid #33445a;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #cad7e9;
+}
+.screen {
+  display: none;
+  padding: 10px;
+  overflow: auto;
+}
+.screen.active { display: block; }
+h1 { margin: 0; font-size: 20px; }
+.sub { margin: 5px 0 10px; font-size: 13px; color: var(--muted); }
+.cards { display: grid; gap: 8px; }
+.card, .panel {
+  background: var(--panel-2);
+  border: 1px solid #3c4c63;
+  border-radius: 10px;
+  padding: 9px;
+}
+.card.selected { border-color: var(--warn); box-shadow: 0 0 0 1px var(--warn) inset; }
+.row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 6px 0; }
+.choice-btn {
+  background: #2a394d;
+  color: var(--text);
+  border: 1px solid #536a89;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+}
+.choice-btn.active { border-color: var(--warn); color: var(--warn); }
+.btn {
+  background: #304157;
+  border: 1px solid #4f647e;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 8px;
+}
+.btn.warn { background: #4d3516; border-color: var(--warn); }
+.btn.good { background: #173926; border-color: var(--good); }
+.progress-wrap {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: #0f1721;
+  border: 1px solid #2f3f55;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #2cc9c2, #63d471); }
+.log-list { display: grid; gap: 6px; }
+.log-item {
+  background: #152031;
+  border: 1px solid #30425a;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 12px;
+}
+.ship-art {
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #3c4f67;
+  background: #101824;
+  color: #89d3ff;
+  font-size: 11px;
+}
+.market-list { display: grid; gap: 8px; }
+.market-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 0.8fr;
+  gap: 6px;
+  background: #1b2634;
+  border: 1px solid #374a64;
+  border-radius: 8px;
+  padding: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+.market-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.mini-btn {
+  background: #2a394d;
+  border: 1px solid #4f647e;
+  color: var(--text);
+  border-radius: 6px;
+  padding: 5px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.needs { display: grid; gap: 8px; margin-bottom: 8px; }
+.need {
+  background: #1b2635;
+  border: 1px solid #3a4d67;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 12px;
+}
+.need-bar {
+  margin-top: 6px;
+  height: 8px;
+  background: #101722;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #2f4056;
+}
+.need-fill { height: 100%; background: #63d471; }
+.need.low .need-fill { background: #e24a3b; }
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 8px;
+  background: #141c26;
+  border-top: 1px solid #344257;
+}
+.tab {
+  border: 1px solid #41516b;
+  border-radius: 8px;
+  background: #243142;
+  color: var(--text);
+  font-size: 12px;
+  padding: 8px 4px;
+}
+.tab.active { border-color: var(--warn); color: var(--warn); }
