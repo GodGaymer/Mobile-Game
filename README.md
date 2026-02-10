@@ -345,11 +345,13 @@ This prototype demonstrates the portrait shift HUD, power sliders, node assignme
 
 ### Current prototype features
 
+- Pre-shift captain trait drafting (3 random picks each run)
 - Quota contract objective with timer-based shift resolution
+- Momentum system that rewards risky play with extraction and payout boosts
 - Automatic threat/heat-driven event cadence plus optional risk event button
 - Sector news modifiers that change payout and threat behavior each shift
 - Win/fail conditions (extract, timeout, hull failure, heat failure)
-- Shift summary with payout math (cargo sale, quota/hazard bonus, repair costs)
-- Contract grading (D/C/B/A/S) and rolling run history
+- Shift summary with payout math (cargo sale, quota/risk/momentum bonuses, repair costs)
+- Contract grading (D/C/B/A/S), legendary moment badges, and rolling run history
 - Between-shift upgrades with strategic tradeoffs
 - Persistent credits and parts across runs

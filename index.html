@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ForgeBelt Guild — Prototype</title>
+  <title>ForgeBelt Guild — Legendary Prototype</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -17,11 +17,14 @@
       <div class="meter">🧾 Quota <strong id="quotaVal">0/30</strong></div>
       <div class="meter">⏱ Shift <strong id="timeVal">180s</strong></div>
       <div class="meter">💳 Credits <strong id="creditsVal">0</strong></div>
+      <div class="meter">🚀 Momentum <strong id="momentumVal">0%</strong></div>
+      <div class="meter">🍺 Captain <strong id="traitVal">None</strong></div>
     </header>
 
     <section class="map-zone">
       <h1>ForgeBelt Shift Console</h1>
       <p class="sub" id="newsText">Sector News: Calm lane conditions.</p>
+      <p class="warning-bar" id="hazardText">No immediate hazards detected.</p>
       <div class="nodes" id="nodes"></div>
       <div class="status">
         <span id="statusText">Shift running.</span>
@@ -71,11 +74,19 @@
     <div class="event-actions" id="eventActions"></div>
   </dialog>
 
+  <dialog id="briefingDialog">
+    <h3>Guild Briefing</h3>
+    <p>Choose your captain perk for this shift.</p>
+    <div class="event-actions" id="traitActions"></div>
+  </dialog>
+
   <dialog id="summaryDialog">
     <h3 id="summaryTitle">Shift Summary</h3>
     <p id="summaryBody"></p>
     <div id="summaryStats" class="summary-stats"></div>
     <div id="summaryGrade" class="summary-grade">Grade: C</div>
+    <h4>Legendary Moments</h4>
+    <div id="badgeList" class="history-list"></div>
     <h4>Run History</h4>
     <div id="historyList" class="history-list"></div>
     <h4>Upgrade Bay</h4>
