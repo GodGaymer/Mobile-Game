@@ -1,0 +1,134 @@
+:root {
+  --bg: #11161d;
+  --panel: #2a3340;
+  --text: #e9eef5;
+  --muted: #a9b4c2;
+  --warn: #f4a62a;
+  --danger: #e24a3b;
+  --ok: #63d471;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: radial-gradient(circle at 20% 0%, #1f2936, var(--bg));
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+}
+.phone-frame {
+  width: min(420px, 100vw);
+  height: min(940px, 100vh);
+  background: #121922;
+  border: 1px solid #3c495d;
+  border-radius: 18px;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  overflow: hidden;
+}
+.hud { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px; background: #1b2330; }
+.meter { background: var(--panel); border-radius: 8px; padding: 7px; font-size: 13px; }
+.map-zone { padding: 12px; }
+.map-zone h1 { font-size: 20px; margin: 0; }
+.sub { margin: 4px 0 8px; color: var(--muted); font-size: 13px; min-height: 18px; }
+.warning-bar {
+  margin: 0 0 8px;
+  background: #1f2a3a;
+  border: 1px solid #425873;
+  border-radius: 8px;
+  padding: 7px;
+  font-size: 12px;
+  color: #b9c8db;
+}
+.warning-bar.hot {
+  background: #3b2528;
+  border-color: #b65a49;
+  color: #ffd2cc;
+}
+.nodes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.node {
+  background: #202a38;
+  border: 1px solid #41516b;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--text);
+}
+.node.active { border-color: var(--warn); box-shadow: 0 0 0 1px var(--warn) inset; }
+.status { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); }
+.controls { background: #192230; border-top: 1px solid #3d4b61; padding: 10px 12px; }
+.controls h2 { margin: 0 0 8px; font-size: 15px; }
+.slider-row { margin-bottom: 8px; }
+.slider-row label { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+input[type="range"] { width: 100%; accent-color: var(--warn); }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.btn {
+  background: #304157;
+  border: 1px solid #4f647e;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn.small { padding: 8px; font-size: 12px; }
+.btn.warn { background: #4d3516; border-color: var(--warn); }
+.btn.good { background: #173926; border-color: var(--ok); }
+.tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px; background: #141c26; border-top: 1px solid #344257; }
+.tab { border: 1px solid #41516b; border-radius: 8px; background: #243142; color: var(--text); font-size: 12px; padding: 8px 4px; }
+.tab.active { border-color: var(--warn); color: var(--warn); }
+
+#eventDialog, #summaryDialog, #briefingDialog {
+  border: 1px solid #566b86;
+  border-radius: 12px;
+  background: #1b2330;
+  color: var(--text);
+  width: min(370px, 92vw);
+}
+#summaryDialog h4 { margin: 10px 0 6px; color: var(--muted); }
+.event-actions { display: grid; gap: 8px; margin-top: 10px; }
+.dialog-choice {
+  background: #27364a;
+  color: var(--text);
+  border: 1px solid #5a7190;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+.dialog-choice:disabled { opacity: 0.5; cursor: not-allowed; }
+.summary-stats {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid #40536e;
+  border-radius: 8px;
+  background: #16202c;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.summary-grade {
+  font-weight: 700;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #485f7d;
+  background: #16202c;
+}
+.grade-s { color: #7df4b4; }
+.grade-a { color: #8de3ff; }
+.grade-b { color: #ffe17d; }
+.grade-c { color: #ffb66f; }
+.grade-d { color: #ff8b8b; }
+.history-list { display: grid; gap: 4px; max-height: 92px; overflow: auto; }
+.history-item {
+  font-size: 12px;
+  background: #152031;
+  border: 1px solid #31445e;
+  border-radius: 6px;
+  padding: 6px;
+}
+.meter.warning { outline: 1px solid var(--warn); }
+.meter.danger { outline: 1px solid var(--danger); background: #412429; }
