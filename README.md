@@ -357,3 +357,12 @@ This prototype demonstrates the portrait shift HUD, power sliders, node assignme
 - Contract grading (D/C/B/A/S), legendary moment badges, and rolling run history
 - Between-shift upgrades with strategic tradeoffs
 - Persistent credits and parts across runs
+
+
+## Colony Ops Pivot (Current Prototype Focus)
+
+- Idle-style mission dispatch loop (choose mission + stance, then autonomous operation).
+- Strong market gameplay with buy/sell decisions and per-day sector news modifiers.
+- Colony simulation pressures (food, power, housing, morale) that affect long-term success.
+- Shipyard progression with visible ship stats and installable upgrades.
+- Colony projects that improve production and economic leverage over time.
