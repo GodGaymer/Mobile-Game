@@ -205,3 +205,121 @@ Always surface morale effects via a dedicated morale icon + tooltip:
   - `High-impact event weight: +10%`
   - `Passive drift: -1.0/min`
   - `Recent source: Beer +10`
+
+## Refinery Economy Controls
+
+Define the refinery model with explicit control levers so balancing can target market abuse, repetitive loops, and runaway profitability.
+
+### 1) Variable refinery efficiency by commodity volatility
+
+Tie per-recipe conversion efficiency to a volatility index from the sector market feed.
+
+- `volatility_index` range: `[0.0, 1.0]` (0 = stable market, 1 = highly unstable)
+- `base_efficiency` from recipe data (typical range `0.70–0.95`)
+- Volatility penalty curve (concave so mid/high volatility hurts more):
+
+`volatility_penalty = 0.20 * (volatility_index ^ 1.5)`
+
+`effective_efficiency = clamp(base_efficiency - volatility_penalty + efficiency_modifiers, 0.45, 1.00)`
+
+Implementation notes:
+
+- Recompute at shift start and whenever sector news changes the commodity volatility bucket.
+- Apply the same `effective_efficiency` to all outputs of a recipe for that shift tick.
+
+### 2) Refinery operating cost (credits/parts/power budget)
+
+Charge operating costs each shift tick while a refinery line is active.
+
+`operating_cost_tick = credits_cost_tick + parts_cost_tick + power_cost_tick`
+
+Where each component is:
+
+- `credits_cost_tick = base_credits * throughput_scalar * wear_scalar`
+- `parts_cost_tick = base_parts * throughput_scalar * wear_scalar`
+- `power_cost_tick = base_power * throughput_scalar * overclock_scalar`
+
+Recommended defaults:
+
+- `throughput_scalar = actual_throughput / nominal_throughput`
+- `wear_scalar = lerp(1.0, 1.4, machine_wear)` where `machine_wear` is `[0,1]`
+- `overclock_scalar = lerp(1.0, 1.5, overclock_level)` where `overclock_level` is `[0,1]`
+
+Hard guards:
+
+- If `credits < credits_cost_tick`, pause line and flag `insufficient_credits`.
+- If `parts < parts_cost_tick`, apply `-25% throughput` and increase failure chance by `+10%`.
+- If `power_budget < power_cost_tick`, throttle output to fit budget instead of allowing negative power.
+
+### 3) Output price cap behavior during sector news spikes
+
+Prevent temporary news spikes from creating extreme one-shift arbitrage.
+
+- Define rolling reference price (per commodity):
+
+`reference_price = median(last_8_shift_prices)`
+
+- During active positive news spikes (`news_spike_strength` in `[0,1]`), apply capped output price:
+
+`spike_cap_mult = lerp(1.10, 1.35, news_spike_strength)`
+
+`max_sell_price = reference_price * spike_cap_mult`
+
+`effective_sell_price = min(market_price_raw, max_sell_price)`
+
+Notes:
+
+- Cap applies only to player refinery outputs; NPC market simulation can keep uncapped internals.
+- If spike ends, smoothly decay cap over `2` shifts to avoid abrupt price cliffs.
+
+### 4) Diminishing returns for repeated recipe runs in consecutive shifts
+
+Discourage one-button loop strategies by reducing marginal output when the same recipe is repeated continuously.
+
+- Track `repeat_streak` per recipe across consecutive shifts (`0` when changed).
+- Apply diminishing output multiplier:
+
+`repeat_mult = max(0.70, 1.00 - 0.06 * repeat_streak)`
+
+`final_output = base_output * effective_efficiency * repeat_mult`
+
+Reset behavior:
+
+- Running a different recipe resets previous recipe streak to `0`.
+- Skipping refinery operation for a shift decays all streaks by `1` (to a minimum of `0`).
+
+## Economy Simulation Balancing Checklist (20-shift seeds)
+
+Use deterministic 20-shift seeds to verify no single strategy dominates across volatility, news, and resource constraints.
+
+### Test matrix
+
+- Run at least `10` fixed seeds, each for `20` shifts.
+- Include scenarios: low volatility, mixed volatility, high volatility, frequent news spikes, scarce parts, scarce power.
+- For each seed, run these strategy archetypes:
+  - `A`: volatility-chasing dynamic recipe switching
+  - `B`: fixed single-recipe repetition
+  - `C`: conservative low-cost operations
+  - `D`: high-throughput overclocked operations
+
+### Metrics to capture per run
+
+- Total profit and profit/shift.
+- Resource burn rates (`credits`, `parts`, `power`) and downtime from shortages.
+- Recipe diversity index (% of shifts not repeating previous recipe).
+- Price-cap engagement rate (% of sell transactions capped).
+- Failure/incident rate while under budget constraints.
+
+### Pass/fail balance gates
+
+- No archetype exceeds next-best archetype mean profit by more than `12%` across the full seed set.
+- Single-recipe repetition strategy (`B`) is not top performer in more than `30%` of seeds.
+- Price cap triggers in spike-heavy seeds but does not reduce average refinery profitability below conservative strategy baseline by more than `15%`.
+- Resource starvation penalties create meaningful tradeoffs: at least one of throughput, failure risk, or downtime worsens when any budget is chronically underfunded.
+- Strategy ranking should vary by seed conditions (evidence that the system is contextual, not solved).
+
+### Review output format (recommended)
+
+- Emit one CSV row per `(seed, strategy)` with all metrics.
+- Produce a summary table with mean, p25, p75 profit per strategy.
+- Flag any gate violations automatically with a short reason code.
