@@ -1,3 +1,9 @@
+# Visual Deliverables
+
+A full first-pass visual package for ForgeBelt Guild is available in [`docs/visuals`](docs/visuals/README.md).
+
+---
+
 ## Extraction + heat (baseline)
 
 `extraction_per_sec = base + drill_bars * step + modifiers`
@@ -323,3 +329,15 @@ Use deterministic 20-shift seeds to verify no single strategy dominates across v
 - Emit one CSV row per `(seed, strategy)` with all metrics.
 - Produce a summary table with mean, p25, p75 profit per strategy.
 - Flag any gate violations automatically with a short reason code.
+
+
+## Run the Playable Prototype
+
+A runnable web prototype is available in the repository root.
+
+1. Start a local server:
+   - `python3 -m http.server 8000`
+2. Open:
+   - `http://localhost:8000`
+
+This prototype demonstrates the portrait shift HUD, power sliders, node assignment, overclock/heat/threat dynamics, event choices, and extract cash-out flow.
