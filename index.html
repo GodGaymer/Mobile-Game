@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ForgeBelt Guild — Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="phone-frame">
+    <header class="hud">
+      <div class="meter" id="hullMeter">🛡 Hull <strong id="hullVal">100</strong></div>
+      <div class="meter" id="heatMeter">🔥 Heat <strong id="heatVal">0</strong></div>
+      <div class="meter">⚡ Power <strong id="powerVal">10/10</strong></div>
+      <div class="meter">📦 Cargo <strong id="cargoVal">0/30</strong></div>
+      <div class="meter" id="threatMeter">☠ Threat <strong id="threatVal">0</strong></div>
+      <div class="meter">🧾 Quota <strong id="quotaVal">0/30</strong></div>
+      <div class="meter">⏱ Shift <strong id="timeVal">180s</strong></div>
+      <div class="meter">💳 Credits <strong id="creditsVal">0</strong></div>
+    </header>
+
+    <section class="map-zone">
+      <h1>ForgeBelt Shift Console</h1>
+      <p class="sub">Assign drones, tune power, and hit contract quota before time runs out.</p>
+      <div class="nodes" id="nodes"></div>
+      <div class="status">
+        <span id="statusText">Shift running.</span>
+        <button id="eventBtn" class="btn small">Trigger Event</button>
+      </div>
+    </section>
+
+    <section class="controls">
+      <h2>Power Allocation (must total 10)</h2>
+      <div class="slider-row">
+        <label for="drill">Drill <span id="drillOut">4</span></label>
+        <input id="drill" type="range" min="0" max="10" value="4" />
+      </div>
+      <div class="slider-row">
+        <label for="shields">Shields <span id="shieldsOut">3</span></label>
+        <input id="shields" type="range" min="0" max="10" value="3" />
+      </div>
+      <div class="slider-row">
+        <label for="scanner">Scanner <span id="scannerOut">2</span></label>
+        <input id="scanner" type="range" min="0" max="10" value="2" />
+      </div>
+      <div class="slider-row">
+        <label for="thrusters">Thrusters <span id="thrustersOut">1</span></label>
+        <input id="thrusters" type="range" min="0" max="10" value="1" />
+      </div>
+
+      <div class="actions">
+        <button id="overclockBtn" class="btn warn">Overclock</button>
+        <button id="ventBtn" class="btn">Vent Heat</button>
+        <button id="sealBtn" class="btn">Seal Breach</button>
+        <button id="extractBtn" class="btn good">Extract & Cash Out</button>
+      </div>
+    </section>
+
+    <footer class="tabs">
+      <button class="tab active">Contracts</button>
+      <button class="tab">Crew</button>
+      <button class="tab">Rig</button>
+      <button class="tab">Market</button>
+      <button class="tab">Station</button>
+    </footer>
+  </main>
+
+  <dialog id="eventDialog">
+    <h3 id="eventTitle"></h3>
+    <p id="eventBody"></p>
+    <div class="event-actions" id="eventActions"></div>
+  </dialog>
+
+  <dialog id="summaryDialog">
+    <h3 id="summaryTitle">Shift Summary</h3>
+    <p id="summaryBody"></p>
+    <div id="summaryStats" class="summary-stats"></div>
+    <div class="event-actions" id="upgradeActions"></div>
+    <button id="nextShiftBtn" class="dialog-choice">Start Next Shift</button>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
