@@ -1,3 +1,6 @@
+const TICK_MS = 200;
+const SHIFT_SECONDS = 180;
+
 const state = {
   hull: 100,
   heat: 0,
@@ -7,6 +10,18 @@ const state = {
   threat: 0,
   overclockTicks: 0,
   selectedNode: null,
+  timeLeft: SHIFT_SECONDS,
+  credits: 0,
+  shiftActive: true,
+  quotaTarget: 30,
+  totalExtracted: 0,
+  shiftIndex: 1,
+  parts: 0,
+  upgrades: {
+    drillMk2: false,
+    coolerFins: false,
+    cargoPods: false,
+  },
 };
 
 const nodes = [
@@ -36,6 +51,51 @@ const events = [
       { label: "Jam comms (Heat +8, Threat -5)", apply: () => { state.heat += 8; state.threat = Math.max(0, state.threat - 5); } },
       { label: "Run (Heat +5, Hull -4)", apply: () => { state.heat += 5; state.hull -= 4; } },
     ]
+  },
+  {
+    title: "Rich Vein",
+    body: "Scanner flags a premium seam nearby.",
+    choices: [
+      { label: "Divert drones (+10 cargo, Threat +6)", apply: () => { state.cargo += 10; state.totalExtracted += 10; state.threat += 6; } },
+      { label: "Stay focused (+3 cargo)", apply: () => { state.cargo += 3; state.totalExtracted += 3; } },
+    ]
+  },
+  {
+    title: "Hull Crack",
+    body: "A pressure seam starts opening across the lower bay.",
+    choices: [
+      { label: "Quick patch (Heat +6, Hull +4)", apply: () => { state.heat += 6; state.hull += 4; } },
+      { label: "Full seal (Hull +10, Time -8s)", apply: () => { state.hull += 10; state.timeLeft = Math.max(0, state.timeLeft - 8); } },
+    ]
+  }
+];
+
+const upgrades = [
+  {
+    id: "drillMk2",
+    name: "Drill Head Mk2",
+    cost: 220,
+    text: "+10% extraction",
+    apply: () => { state.upgrades.drillMk2 = true; }
+  },
+  {
+    id: "coolerFins",
+    name: "Cooler Fins",
+    cost: 180,
+    text: "-15% heat gain",
+    apply: () => { state.upgrades.coolerFins = true; }
+  },
+  {
+    id: "cargoPods",
+    name: "Cargo Pods",
+    cost: 200,
+    text: "+10 cargo capacity",
+    apply: () => {
+      if (!state.upgrades.cargoPods) {
+        state.cargoMax += 10;
+      }
+      state.upgrades.cargoPods = true;
+    }
   }
 ];
 
@@ -45,7 +105,8 @@ const inputs = Object.fromEntries(ids.map(id => [id, document.getElementById(id)
 
 const nodeWrap = document.getElementById("nodes");
 const statusText = document.getElementById("statusText");
-const dialog = document.getElementById("eventDialog");
+const eventDialog = document.getElementById("eventDialog");
+const summaryDialog = document.getElementById("summaryDialog");
 
 function renderNodes() {
   nodeWrap.innerHTML = "";
@@ -54,6 +115,7 @@ function renderNodes() {
     b.className = "node" + (state.selectedNode === n.id ? " active" : "");
     b.textContent = n.name;
     b.onclick = () => {
+      if (!state.shiftActive) return;
       state.selectedNode = n.id;
       statusText.textContent = `Miner drone assigned to ${n.name}.`;
       renderNodes();
@@ -82,21 +144,41 @@ ids.forEach(id => {
   });
 });
 
-function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
+
+function extractionMultiplier() {
+  let mult = 1;
+  if (state.upgrades.drillMk2) mult *= 1.1;
+  if (state.overclockTicks > 0) mult *= 1.3;
+  return mult;
+}
+
+function heatMultiplier() {
+  return state.upgrades.coolerFins ? 0.85 : 1;
+}
 
 function tick() {
+  if (!state.shiftActive) return;
+
   const drill = Number(inputs.drill.value);
   const shields = Number(inputs.shields.value);
   const thrusters = Number(inputs.thrusters.value);
 
-  const extract = (0.25 * drill) * (state.overclockTicks > 0 ? 1.3 : 1);
-  if (state.selectedNode) state.cargo += extract * 0.5;
+  const extractPerSecond = 0.25 * drill * extractionMultiplier();
+  const extractTick = state.selectedNode ? extractPerSecond * (TICK_MS / 1000) : 0;
 
-  state.heat += (0.6 * drill + (state.overclockTicks > 0 ? 0.4 : 0) - 0.5 * shields) * 0.2;
-  state.heat -= 0.2;
+  state.cargo += extractTick;
+  state.totalExtracted += extractTick;
 
-  state.threat += (0.2 + 0.1 * drill - 0.15 * shields) * 0.2;
-  state.hull -= Math.max(0, (state.threat - 80) * 0.002 - thrusters * 0.001);
+  const heatPerSec = (0.6 * drill + (state.overclockTicks > 0 ? 0.4 : 0) - 0.5 * shields) * heatMultiplier();
+  state.heat += heatPerSec * (TICK_MS / 1000);
+  state.heat -= 1.0 * (TICK_MS / 1000);
+
+  const threatPerSec = 0.2 + 0.1 * drill - 0.15 * shields;
+  state.threat += threatPerSec * (TICK_MS / 1000);
+  state.hull -= Math.max(0, (state.threat - 80) * 0.015 - thrusters * 0.01) * (TICK_MS / 1000);
 
   state.heat = clamp(state.heat, 0, 100);
   state.threat = clamp(state.threat, 0, 100);
@@ -105,9 +187,27 @@ function tick() {
 
   if (state.overclockTicks > 0) state.overclockTicks -= 1;
 
-  if (state.hull <= 0) statusText.textContent = "Shift failed: hull collapse.";
-  else if (state.heat >= 100) statusText.textContent = "Catastrophic heat! Hit Vent Heat now.";
-  else statusText.textContent = state.selectedNode ? "Mining in progress." : "Assign a drone to begin mining.";
+  state.timeLeft = Math.max(0, state.timeLeft - TICK_MS / 1000);
+
+  if (state.hull <= 0) {
+    endShift("fail_hull");
+    return;
+  }
+  if (state.heat >= 100) {
+    endShift("fail_heat");
+    return;
+  }
+  if (state.timeLeft <= 0) {
+    endShift("timeout");
+    return;
+  }
+
+  const quotaNow = Math.floor(state.totalExtracted);
+  if (quotaNow >= state.quotaTarget) {
+    statusText.textContent = "Quota met! Extract now for full payout.";
+  } else {
+    statusText.textContent = state.selectedNode ? "Mining in progress." : "Assign a drone to begin mining.";
+  }
 
   render();
 }
@@ -117,6 +217,9 @@ function render() {
   document.getElementById("heatVal").textContent = Math.round(state.heat);
   document.getElementById("cargoVal").textContent = `${Math.round(state.cargo)}/${state.cargoMax}`;
   document.getElementById("threatVal").textContent = Math.round(state.threat);
+  document.getElementById("quotaVal").textContent = `${Math.floor(state.totalExtracted)}/${state.quotaTarget}`;
+  document.getElementById("timeVal").textContent = `${Math.ceil(state.timeLeft)}s`;
+  document.getElementById("creditsVal").textContent = `${state.credits}`;
 
   const heatMeter = document.getElementById("heatMeter");
   const threatMeter = document.getElementById("threatMeter");
@@ -133,6 +236,7 @@ function render() {
 }
 
 function showEvent() {
+  if (!state.shiftActive) return;
   const e = events[Math.floor(Math.random() * events.length)];
   document.getElementById("eventTitle").textContent = e.title;
   document.getElementById("eventBody").textContent = e.body;
@@ -144,37 +248,135 @@ function showEvent() {
     btn.textContent = c.label;
     btn.onclick = () => {
       c.apply();
-      dialog.close();
+      eventDialog.close();
       render();
     };
     wrap.appendChild(btn);
   });
-  dialog.showModal();
+  eventDialog.showModal();
+}
+
+function calculatePayout(resultType) {
+  const cargoCredits = Math.round(state.cargo * 12);
+  const quotaMet = state.totalExtracted >= state.quotaTarget;
+  const quotaBonus = quotaMet ? 180 : 0;
+  const failurePenalty = resultType.startsWith("fail") ? 0.55 : 1;
+  const gross = Math.round((cargoCredits + quotaBonus) * failurePenalty);
+  const repairCost = Math.round((100 - state.hull) * 1.2);
+  const net = Math.max(0, gross - repairCost);
+  return { cargoCredits, quotaBonus, repairCost, net, quotaMet };
+}
+
+function openSummary(resultType, payout) {
+  const titleMap = {
+    extracted: "Shift Complete",
+    timeout: "Shift Ended (Time Up)",
+    fail_hull: "Shift Failed (Hull)",
+    fail_heat: "Shift Failed (Heat)",
+  };
+  document.getElementById("summaryTitle").textContent = titleMap[resultType] || "Shift Summary";
+  document.getElementById("summaryBody").textContent = payout.quotaMet
+    ? "Quota achieved. Guild pays full bonus."
+    : "Quota not met. Partial earnings only.";
+
+  document.getElementById("summaryStats").innerHTML = [
+    `Shift ${state.shiftIndex}`,
+    `Extracted: ${Math.floor(state.totalExtracted)} ore`,
+    `Cargo Sale: ${payout.cargoCredits}c`,
+    `Quota Bonus: ${payout.quotaBonus}c`,
+    `Repair Cost: -${payout.repairCost}c`,
+    `Net Payout: ${payout.net}c`,
+    `Credits Total: ${state.credits}c`,
+  ].map(line => `<div>${line}</div>`).join("");
+
+  renderUpgradeOptions();
+  summaryDialog.showModal();
+}
+
+function renderUpgradeOptions() {
+  const wrap = document.getElementById("upgradeActions");
+  wrap.innerHTML = "";
+  upgrades.forEach(up => {
+    const owned = state.upgrades[up.id];
+    const affordable = state.credits >= up.cost;
+    const btn = document.createElement("button");
+    btn.className = "dialog-choice";
+    btn.disabled = owned || !affordable;
+    btn.textContent = owned
+      ? `Owned: ${up.name}`
+      : `${up.name} (${up.cost}c) — ${up.text}`;
+    btn.onclick = () => {
+      if (state.credits < up.cost || state.upgrades[up.id]) return;
+      state.credits -= up.cost;
+      up.apply();
+      renderUpgradeOptions();
+      render();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function endShift(resultType) {
+  if (!state.shiftActive) return;
+  state.shiftActive = false;
+
+  const payout = calculatePayout(resultType);
+  state.credits += payout.net;
+  state.parts += payout.quotaMet ? 2 : 1;
+
+  openSummary(resultType, payout);
+  render();
+}
+
+function resetForNextShift() {
+  state.shiftIndex += 1;
+  state.hull = 100;
+  state.heat = 0;
+  state.threat = 0;
+  state.cargo = 0;
+  state.overclockTicks = 0;
+  state.selectedNode = null;
+  state.totalExtracted = 0;
+  state.timeLeft = SHIFT_SECONDS;
+  state.shiftActive = true;
+  state.quotaTarget = 30 + Math.floor((state.shiftIndex - 1) * 4);
+
+  renderNodes();
+  render();
+  statusText.textContent = "New shift started. Pick a node and mine.";
 }
 
 document.getElementById("overclockBtn").onclick = () => {
+  if (!state.shiftActive) return;
   state.overclockTicks = 50;
   statusText.textContent = "Overclock engaged for 10s.";
 };
 
 document.getElementById("ventBtn").onclick = () => {
+  if (!state.shiftActive) return;
   state.heat = Math.max(0, state.heat - 20);
+  render();
 };
 
 document.getElementById("sealBtn").onclick = () => {
+  if (!state.shiftActive) return;
   state.hull = Math.min(100, state.hull + 8);
   state.heat = Math.min(100, state.heat + 4);
+  render();
 };
 
 document.getElementById("extractBtn").onclick = () => {
-  const credits = Math.round(state.cargo * 12);
-  statusText.textContent = `Extracted. Shift payout: ${credits}c.`;
-  state.cargo = 0;
-  state.threat = Math.max(0, state.threat - 20);
+  if (!state.shiftActive) return;
+  endShift("extracted");
 };
 
 document.getElementById("eventBtn").onclick = showEvent;
 
+document.getElementById("nextShiftBtn").onclick = () => {
+  summaryDialog.close();
+  resetForNextShift();
+};
+
 renderNodes();
 render();
-setInterval(tick, 200);
+setInterval(tick, TICK_MS);

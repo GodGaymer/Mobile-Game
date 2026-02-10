@@ -14,11 +14,14 @@
       <div class="meter">⚡ Power <strong id="powerVal">10/10</strong></div>
       <div class="meter">📦 Cargo <strong id="cargoVal">0/30</strong></div>
       <div class="meter" id="threatMeter">☠ Threat <strong id="threatVal">0</strong></div>
+      <div class="meter">🧾 Quota <strong id="quotaVal">0/30</strong></div>
+      <div class="meter">⏱ Shift <strong id="timeVal">180s</strong></div>
+      <div class="meter">💳 Credits <strong id="creditsVal">0</strong></div>
     </header>
 
     <section class="map-zone">
       <h1>ForgeBelt Shift Console</h1>
-      <p class="sub">Assign drones, tune power, and survive the shift.</p>
+      <p class="sub">Assign drones, tune power, and hit contract quota before time runs out.</p>
       <div class="nodes" id="nodes"></div>
       <div class="status">
         <span id="statusText">Shift running.</span>
@@ -66,6 +69,14 @@
     <h3 id="eventTitle"></h3>
     <p id="eventBody"></p>
     <div class="event-actions" id="eventActions"></div>
+  </dialog>
+
+  <dialog id="summaryDialog">
+    <h3 id="summaryTitle">Shift Summary</h3>
+    <p id="summaryBody"></p>
+    <div id="summaryStats" class="summary-stats"></div>
+    <div class="event-actions" id="upgradeActions"></div>
+    <button id="nextShiftBtn" class="dialog-choice">Start Next Shift</button>
   </dialog>
 
   <script src="script.js"></script>

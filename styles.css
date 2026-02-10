@@ -6,7 +6,6 @@
   --warn: #f4a62a;
   --danger: #e24a3b;
   --ok: #63d471;
-  --teal: #2cc9c2;
 }
 * { box-sizing: border-box; }
 body {
@@ -20,7 +19,7 @@ body {
 }
 .phone-frame {
   width: min(420px, 100vw);
-  height: min(860px, 100vh);
+  height: min(900px, 100vh);
   background: #121922;
   border: 1px solid #3c495d;
   border-radius: 18px;
@@ -41,9 +40,7 @@ body {
   padding: 7px;
   font-size: 13px;
 }
-.map-zone {
-  padding: 12px;
-}
+.map-zone { padding: 12px; }
 .map-zone h1 { font-size: 20px; margin: 0; }
 .sub { margin: 4px 0 10px; color: var(--muted); font-size: 13px; }
 .nodes {
@@ -58,6 +55,7 @@ body {
   padding: 10px;
   text-align: center;
   cursor: pointer;
+  color: var(--text);
 }
 .node.active { border-color: var(--warn); box-shadow: 0 0 0 1px var(--warn) inset; }
 .status {
@@ -113,7 +111,8 @@ input[type="range"] { width: 100%; accent-color: var(--warn); }
 }
 .tab.active { border-color: var(--warn); color: var(--warn); }
 
-#eventDialog {
+#eventDialog,
+#summaryDialog {
   border: 1px solid #566b86;
   border-radius: 12px;
   background: #1b2330;
@@ -128,6 +127,20 @@ input[type="range"] { width: 100%; accent-color: var(--warn); }
   border-radius: 8px;
   padding: 10px;
   cursor: pointer;
+}
+.dialog-choice:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.summary-stats {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid #40536e;
+  border-radius: 8px;
+  background: #16202c;
+  margin-bottom: 8px;
+  font-size: 13px;
 }
 .meter.warning { outline: 1px solid var(--warn); }
 .meter.danger { outline: 1px solid var(--danger); background: #412429; }

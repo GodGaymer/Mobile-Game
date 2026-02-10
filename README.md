@@ -341,3 +341,13 @@ A runnable web prototype is available in the repository root.
    - `http://localhost:8000`
 
 This prototype demonstrates the portrait shift HUD, power sliders, node assignment, overclock/heat/threat dynamics, event choices, and extract cash-out flow.
+
+
+### Current prototype features
+
+- Quota contract objective with timer-based shift resolution
+- Win/fail conditions (extract, timeout, hull failure, heat failure)
+- Shift summary with payout math (cargo sale, quota bonus, repair costs)
+- Between-shift upgrades (Drill Mk2, Cooler Fins, Cargo Pods)
+- Persistent credits across runs
+
