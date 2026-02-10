@@ -21,11 +21,11 @@
 
     <section class="map-zone">
       <h1>ForgeBelt Shift Console</h1>
-      <p class="sub">Assign drones, tune power, and hit contract quota before time runs out.</p>
+      <p class="sub" id="newsText">Sector News: Calm lane conditions.</p>
       <div class="nodes" id="nodes"></div>
       <div class="status">
         <span id="statusText">Shift running.</span>
-        <button id="eventBtn" class="btn small">Trigger Event</button>
+        <button id="eventBtn" class="btn small">Risk Event</button>
       </div>
     </section>
 
@@ -75,6 +75,10 @@
     <h3 id="summaryTitle">Shift Summary</h3>
     <p id="summaryBody"></p>
     <div id="summaryStats" class="summary-stats"></div>
+    <div id="summaryGrade" class="summary-grade">Grade: C</div>
+    <h4>Run History</h4>
+    <div id="historyList" class="history-list"></div>
+    <h4>Upgrade Bay</h4>
     <div class="event-actions" id="upgradeActions"></div>
     <button id="nextShiftBtn" class="dialog-choice">Start Next Shift</button>
   </dialog>
