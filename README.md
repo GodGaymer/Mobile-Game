@@ -112,3 +112,96 @@ Optional anti-streak global guard (recommended):
 Implementation tip:
 
 - Track `last_spawn_time` in simulation state and evaluate cooldowns during event selection, *before* committing any event side effects.
+
+### Morale System Specification
+
+Treat morale as a bounded scalar that is updated once per simulation tick and shown to players as an integer percentage.
+
+- `morale` clamp: `[0, 100]`
+- Internal storage: float for accumulation, rounded only for UI.
+- Tick formula:
+
+`morale_next = clamp(morale_prev + passive_drift + threshold_impact + source_sink_delta, 0, 100)`
+
+#### 1) Passive morale drift per minute
+
+Passive drift is optional and can be disabled by setting it to zero.
+
+- Default: `passive_drift_per_min = -1.0`
+- Per-second conversion: `passive_drift = passive_drift_per_min / 60`
+- If no passive drift is desired for a mode/difficulty, set `passive_drift_per_min = 0.0`.
+
+#### 2) Morale threshold bands and concrete impacts
+
+Apply one active band each tick based on `morale_prev` (before this tick's updates):
+
+| Morale band | Band effect | Concrete numeric modifiers |
+|---|---|---|
+| `< 30` (low) | Crew instability | `extraction_per_sec_mult = -0.15`, `event_severity_weight_high = +0.10`, `critical_mishap_chance = +0.05` |
+| `30–70` (stable) | Baseline operation | No modifier (`0.00` across morale-derived stats) |
+| `> 70` (high) | Motivated crew | `extraction_per_sec_mult = +0.10`, `repair_speed_mult = +0.10`, `event_severity_weight_high = -0.05` |
+
+Band behavior:
+
+- Evaluate once per tick after core production values are computed and before final clamping.
+- Only one band can apply at a time.
+- Crossing a band edge can optionally trigger a one-shot log/toast, but numeric band modifiers are continuous while in-band.
+
+#### 3) All morale sources and sinks
+
+Sum morale sources/sinks in `source_sink_delta` each tick from these channels.
+
+##### Traits (persistent modifiers)
+
+- `optimist` trait: `+0.5 morale/min`
+- `pessimist` trait: `-0.5 morale/min`
+- `hardened` trait: reduces negative event morale penalties by `25%`
+
+Trait effects are always-on while the crew member is active.
+
+##### Events (discrete deltas)
+
+- Minor positive event (e.g., clean salvage): `+4 morale`
+- Minor negative event (e.g., equipment scare): `-6 morale`
+- Major positive event (e.g., bonus cache): `+8 morale`
+- Major negative event (e.g., pirate breach): `-12 morale`
+
+Apply instantly when the event resolves.
+
+##### Beer action (player consumable)
+
+- Use effect: `+10 morale` instantly
+- Cooldown: `90s`
+- Optional side-effect (if enabled in balance mode): `-5% extraction_per_sec` for `20s`
+
+##### Emergency extract (panic action)
+
+- Immediate morale penalty: `-20 morale`
+- Additional next-shift penalty tag: `shaken` (`-5 starting morale`, applied once at next shift start)
+
+#### 4) Persistence rules between shifts
+
+At shift end, persist morale with partial carryover and a safe reset range.
+
+- Carryover: `next_shift_start_morale = round(prev_shift_end_morale * 0.60)`
+- Reset floor: minimum start morale after carryover is `25`
+- Reset ceiling: maximum start morale after carryover is `80`
+
+Final start morale formula:
+
+`start_morale = clamp(round(end_morale * 0.60) + one_shot_shift_tags, 25, 80)`
+
+Where `one_shot_shift_tags` includes effects like emergency extract's `shaken` penalty.
+
+#### 5) UI surfacing rule (required)
+
+Always surface morale effects via a dedicated morale icon + tooltip:
+
+- Show a morale status icon beside the morale meter (red low, gray stable, green high).
+- On hover/tap, tooltip must list **exact active numeric modifiers** from the current band and active sources/sinks.
+- Tooltip format example:
+  - `Morale: 24 (Low)`
+  - `Extraction: -15%`
+  - `High-impact event weight: +10%`
+  - `Passive drift: -1.0/min`
+  - `Recent source: Beer +10`
