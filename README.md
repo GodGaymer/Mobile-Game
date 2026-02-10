@@ -36,3 +36,79 @@ Threshold trigger semantics:
 
 - **Crossing-edge trigger** (fire once per crossing): trigger only when value crosses the threshold boundary this tick (for example `prev_heat < 80.0` and `new_heat >= 80.0`). Do not retrigger on subsequent ticks while still above the threshold.
 - **While-above trigger** (fire each eligible tick): trigger every tick where value remains above threshold after clamping (for example `new_heat >= 95.0`).
+
+### Shift Event Pacing and Threat Scaling
+
+Use a target-events model so each shift has a predictable event volume, then let threat bias what type of event is selected.
+
+#### 1) Expected event counts by shift duration and intensity
+
+Define three intensity bands and expected total event counts (`expected_events`) over a shift:
+
+| Shift duration | Low intensity | Normal intensity | High intensity |
+|---:|---:|---:|---:|
+| 3 min (180s) | 2 | 4 | 6 |
+| 5 min (300s) | 3 | 6 | 9 |
+| 8 min (480s) | 5 | 9 | 14 |
+| 10 min (600s) | 6 | 12 | 18 |
+
+Guideline for custom shift lengths:
+
+- `low_rate = 0.010 events/sec`
+- `normal_rate = 0.020 events/sec`
+- `high_rate = 0.030 events/sec`
+
+Then compute:
+
+`expected_events = round(shift_duration_sec * rate_by_intensity)`
+
+#### 2) Baseline event check interval and threat-based probability
+
+Use fixed event checks every `5s`.
+
+- `check_interval_sec = 5`
+- `checks_per_shift = shift_duration_sec / check_interval_sec`
+
+Baseline spawn chance per check is:
+
+`p_base = expected_events / checks_per_shift`
+
+Clamp to avoid extremes and preserve pacing:
+
+- `p_base = clamp(p_base, 0.02, 0.45)`
+
+Threat (`threat` in `[0.0, 1.0]`) modifies final per-check probability with a bounded scalar:
+
+- `threat_scalar = lerp(0.75, 1.35, threat)`
+- `p_final = clamp(p_base * threat_scalar, 0.02, 0.60)`
+
+Notes:
+
+- Threat should primarily change event *severity/category weighting* and only moderately alter total volume.
+- If a deterministic cap is needed, stop spawning once `spawned_events >= expected_events * 1.25`.
+
+#### 3) Cooldown spacing to avoid duplicate high-impact events
+
+Maintain per-category cooldown timers (in seconds) from the last spawned event of that category.
+
+Minimum spacing rules:
+
+- `pirate`: `45s`
+- `meteor`: `35s`
+- `system`: `30s`
+
+Spawn eligibility check for candidate event `E` of category `C`:
+
+1. `now - last_spawn_time[C] >= cooldown_sec[C]`
+2. If false, either:
+   - reroll a different category/event that is eligible, or
+   - spawn nothing this check (preferred if reroll budget is exhausted).
+
+Optional anti-streak global guard (recommended):
+
+- `high_impact_global_spacing = 20s`
+- If `E.impact == high`, require `now - last_high_impact_spawn >= 20s`.
+
+Implementation tip:
+
+- Track `last_spawn_time` in simulation state and evaluate cooldowns during event selection, *before* committing any event side effects.
